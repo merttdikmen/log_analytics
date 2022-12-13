@@ -7,6 +7,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Bil401_Project" />
+        <module name="log_analytics" />
       </profile>
     </annotationProcessing>
   </component>
