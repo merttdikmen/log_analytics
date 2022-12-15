@@ -32,6 +32,38 @@ object main {
 
     val data = temp.na.drop()
 
+    // User agents that send the most requests
+    data
+      .select("USER AGENT")
+      .map(row => if (row.getString(0).split(" ").length == 0) "-"
+                  else row.getString(0).split(" ")(0).split("/")(0))
+      .groupBy("value")
+      .count()
+      .orderBy(col("count").desc)
+      .show(30, false)
+
+    // Hourly request rate
+    data
+      .select("TIMESTAMP")
+      .map(row => row.getString(0).split(":")(1))  // hours
+      .groupBy("value")
+      .count()
+      .withColumnRenamed("value", "hour_of_day")
+      .withColumnRenamed("count", "num_request")
+      .orderBy(col("hour_of_day").asc)
+      .show(24, false)
+
+    // Most popular content
+    data
+      .select("PATH")
+      .map(row => if (row.getString(0).split(" ").length < 2) row.getString(0)
+                  else row.getString(0).split(" ")(1))
+      .filter(path => path.compare("-") != 0)
+      .groupBy("value")
+      .count()
+      .withColumnRenamed("value", "content")
+      .orderBy(col("count").desc)
+      .show(30, false)
 
   }
   def errorCode(data: DataFrame):DataFrame={
