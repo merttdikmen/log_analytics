@@ -1,6 +1,6 @@
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
-import org.apache.spark.sql.functions.{col, regexp_replace, split}
+import org.apache.spark.sql.functions.{col, isnull, regexp_replace, split}
 import org.apache.spark.sql.types.{StringType, StructType}
 
 object main {
@@ -71,17 +71,25 @@ object main {
     val values = data.groupBy("STATUS CODE").count()
     val not_found = data.filter(col("STATUS CODE") === "404").select("URI").distinct
 
+    //Şifrelenmiş URL’lerin decoder ile çözülmüş hali
+    import java.nio.charset.StandardCharsets
+    val coded=data.select("PATH").filter(x => x.toString.length > 2 && x.get(0).toString.contains(" /"))
+      .map(value => value.toString.substring(value.mkString.indexOf(" /") + 3))
+      .filter(line => line.mkString.contains("%"))
+    val decoded_url=coded.map(a=>java.net.URLDecoder.decode(a.mkString, StandardCharsets.UTF_8))
+    // result.distinct().show(false)
 
     //Log dosyalarındaki IP bilgisinden yararlanılarak ülke bazında siteye yapan kullanıcıların en çok tercih edilen arama motorlarının oranı
     val ipLoc = spark.read.format("csv").option("header", "false").load("src/resources/ip2loc.csv")
     val joinTable = data.withColumn("joinIP", regexp_replace(col("IP"), "\\.", ""))
     val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
-    val loc_count = location.groupBy("_c2").count()
+     //location.filter(col("_c2").isNotNull).distinct().show()
+
 
     //Salamender üzerinden erişim yapanların bot olma yüzdesi, botların çoğunlukla hangi browser üzerinden geldiği
-    val how_google_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bot.html")).count()
+   /* val how_google_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bot.html")).count()
     val how_bing_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bingbot.htm")).count()
-    val which_bot = (how_google_bot, how_bing_bot)
+    val which_bot = (how_google_bot, how_bing_bot)*/
 
 
   }
