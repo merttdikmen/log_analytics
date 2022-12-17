@@ -52,15 +52,6 @@ object main {
     location.groupBy("_c2").count()
     location
   }
-  def reqTypes(data:DataFrame):DataFrame={
-    data
-    //data.select(col("PATH")).filter(z=>z.mkString.isEmpty()).count()
-    //boş pathlilerin sayısı
-    //val df = data.select("PATH", "TIMESTAMP").filter(x => x.get(0).toString.length > 2 && x.get(0).toString.contains(" /"))
-    //  .map(value => (value.get(0).toString.substring(0, value.mkString.indexOf(" /")), value.get(1).toString.substring(4, 12)))(implicit enc:Encoder[T])
-     // .groupBy("_1", "_2").count()
-    //df
-  }
 
   def whichBot(data: DataFrame): (Long,Long) = {
     val how_google_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains("bot.html")).count()
