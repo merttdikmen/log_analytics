@@ -8,7 +8,7 @@ object main {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
-      .appName("Compute Daily Page Views")
+      .appName("Spark Long Analytics")
       .config("spark.master", "local")
       .getOrCreate()
 
