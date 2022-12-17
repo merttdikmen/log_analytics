@@ -32,33 +32,26 @@ object main {
       withColumnRenamed("cols2", "SIZE")
     val data = temp.na.drop()
 
-
+    //Sayfaya gelen istek tiplerinin aylık analizi
     val rates_to_date_country = data.select("PATH", "TIMESTAMP").filter(x => x.get(0).toString.length > 2 && x.get(0).toString.contains(" /"))
     .map(value => (value.get(0).toString.substring(0, value.mkString.indexOf(" /")), value.get(1).toString.substring(4, 12)))
     .groupBy("_1", "_2").count()
 
-    println(whichBot(data))
-
-  }
-  def errorCode(data: DataFrame):DataFrame={
+   //Sunucu kaynaklı erişilemeyen web sitesi hatası oranı
     val values = data.groupBy("STATUS CODE").count()
     val not_found = data.filter(col("STATUS CODE") === "404").select("URI").distinct
-    not_found
-  }
-  def countryRate(df: DataFrame,spark:SparkSession):DataFrame={
+
+
+    //Log dosyalarındaki IP bilgisinden yararlanılarak ülke bazında siteye yapan kullanıcıların en çok tercih edilen arama motorlarının oranı
     val ipLoc = spark.read.format("csv").option("header", "false").load("src/resources/ip2loc.csv")
     val joinTable = df.withColumn("joinIP", regexp_replace(col("IP"), "\\.", ""))
-  val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
-    location.groupBy("_c2").count()
-    location
-  }
+    val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
+    val loc_count=location.groupBy("_c2").count()
 
-  def whichBot(data: DataFrame): (Long,Long) = {
-    val how_google_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains("bot.html")).count()
-    val how_bing_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains("bingbot.htm")).count()
-    // val bot = "bot"             
-    // val total_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains(bot)).count()
-    (how_google_bot , how_bing_bot)
-  }
 
+    val how_google_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bot.html")).count()
+    val how_bing_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bingbot.htm")).count()
+    val which_bot=  (how_google_bot, how_bing_bot)
+
+  }
 }
