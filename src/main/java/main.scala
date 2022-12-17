@@ -1,8 +1,10 @@
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.functions.{col, regexp_replace, split}
 import org.apache.spark.sql.types.{StringType, StructType}
 
 object main {
+
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder()
@@ -11,7 +13,6 @@ object main {
       .getOrCreate()
 
     import spark.implicits._
-
     val df = spark.read.textFile("src/resources/401.txt")
     val splitted = df.map(value => (
       value.substring(0, value.indexOf(" - - ")),
@@ -29,8 +30,13 @@ object main {
       withColumnRenamed("col3", "USER AGENT").
       withColumnRenamed("cols1", "STATUS CODE").
       withColumnRenamed("cols2", "SIZE")
-
     val data = temp.na.drop()
+
+
+    val rates_to_date_country = data.select("PATH", "TIMESTAMP").filter(x => x.get(0).toString.length > 2 && x.get(0).toString.contains(" /"))
+    .map(value => (value.get(0).toString.substring(0, value.mkString.indexOf(" /")), value.get(1).toString.substring(4, 12)))
+    .groupBy("_1", "_2").count()
+
     println(whichBot(data))
 
   }
@@ -40,17 +46,20 @@ object main {
     not_found
   }
   def countryRate(df: DataFrame,spark:SparkSession):DataFrame={
-    val ipLoc = spark.read.format("csv").option("header", "false").load("ip2loc.csv")
+    val ipLoc = spark.read.format("csv").option("header", "false").load("src/resources/ip2loc.csv")
     val joinTable = df.withColumn("joinIP", regexp_replace(col("IP"), "\\.", ""))
   val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
     location.groupBy("_c2").count()
     location
   }
-  def reqTypes(df:DataFrame):DataFrame={
-    df.select(col("PATH")).filter(z=>z.mkString.isEmpty()).count()
+  def reqTypes(data:DataFrame):DataFrame={
+    data
+    //data.select(col("PATH")).filter(z=>z.mkString.isEmpty()).count()
     //boş pathlilerin sayısı
-    val nonEmptyReqs=df.select(col("PATH")).filter(x=>x.mkString.nonEmpty)
-    nonEmptyReqs
+    //val df = data.select("PATH", "TIMESTAMP").filter(x => x.get(0).toString.length > 2 && x.get(0).toString.contains(" /"))
+    //  .map(value => (value.get(0).toString.substring(0, value.mkString.indexOf(" /")), value.get(1).toString.substring(4, 12)))(implicit enc:Encoder[T])
+     // .groupBy("_1", "_2").count()
+    //df
   }
 
   def whichBot(data: DataFrame): (Long,Long) = {
