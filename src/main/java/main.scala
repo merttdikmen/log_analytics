@@ -85,30 +85,7 @@ object main {
     val how_bing_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bingbot.htm")).count()
     val which_bot = (how_google_bot, how_bing_bot)
 
-    println(whichBot(data))
 
-  }
-
-  def errorCode(data: DataFrame): DataFrame = {
-    val values = data.groupBy("STATUS CODE").count()
-    val not_found = data.filter(col("STATUS CODE") === "404").select("URI").distinct
-    not_found
-  }
-
-  def countryRate(df: DataFrame, spark: SparkSession): DataFrame = {
-    val ipLoc = spark.read.format("csv").option("header", "false").load("src/resources/ip2loc.csv")
-    val joinTable = df.withColumn("joinIP", regexp_replace(col("IP"), "\\.", ""))
-    val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
-    location.groupBy("_c2").count()
-    location
-  }
-
-  def whichBot(data: DataFrame): (Long, Long) = {
-    val how_google_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bot.html")).count()
-    val how_bing_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bingbot.htm")).count()
-    // val bot = "bot"             
-    // val total_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains(bot)).count()
-    (how_google_bot, how_bing_bot)
   }
 
 }
