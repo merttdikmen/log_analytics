@@ -32,7 +32,6 @@ object main {
       withColumnRenamed("cols2", "SIZE")
     val data = temp.na.drop()
 
-
     val rates_to_date_country = data.select("PATH", "TIMESTAMP").filter(x => x.get(0).toString.length > 2 && x.get(0).toString.contains(" /"))
     .map(value => (value.get(0).toString.substring(0, value.mkString.indexOf(" /")), value.get(1).toString.substring(4, 12)))
     .groupBy("_1", "_2").count()
