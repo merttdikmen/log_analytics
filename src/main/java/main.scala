@@ -31,7 +31,7 @@ object main {
       withColumnRenamed("cols2", "SIZE")
 
     val data = temp.na.drop()
-
+    println(whichBot(data))
 
   }
   def errorCode(data: DataFrame):DataFrame={
@@ -52,4 +52,13 @@ object main {
     val nonEmptyReqs=df.select(col("PATH")).filter(x=>x.mkString.nonEmpty)
     nonEmptyReqs
   }
+
+  def whichBot(data: DataFrame): (Long,Long) = {
+    val how_google_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains("bot.html")).count()
+    val how_bing_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains("bingbot.htm")).count()
+    // val bot = "bot"             
+    // val total_bot = data.select(col("USER AGENT")).filter(line=> line.mkString.contains(bot)).count()
+    (how_google_bot , how_bing_bot)
+  }
+
 }
