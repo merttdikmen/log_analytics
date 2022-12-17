@@ -83,7 +83,26 @@ object main {
     val how_bing_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bingbot.htm")).count()
     val which_bot = (how_google_bot, how_bing_bot)
 
+    /*
+    write2db(most_request, "most_request")
+    write2db(hourly_requested_rate, "hourly_requested_rate")
+    write2db(most_popular_content, "most_popular_content")
+    write2db(rates_to_date_country, "rates_to_date_country")
+    write2db(not_found, "not_found")
+    write2db(loc_count, "loc_count")
+     */
 
+  }
+
+  def write2db(dataFrame: DataFrame, tableName: String): Unit = {
+    dataFrame.write.format("jdbc")
+      .option("url", "jdbc:mysql://localhost:3306/log_analytics")
+      .option("driver", "com.mysql.cj.jdbc.Driver")
+      .option("dbtable", s"$tableName")
+      .option("user", "root")
+      .option("password", "my-secret-pw")
+      .mode("overwrite")
+      .saveAsTable(s"$tableName")
   }
 
 }
