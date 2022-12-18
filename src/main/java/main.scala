@@ -97,8 +97,8 @@ object main {
     write2db(most_popular_content, "most_popular_content")
     write2db(rates_to_date_country, "rates_to_date_country")
     write2db(not_found, "not_found")
-    write2db(loc_count, "loc_count")
-     */
+    write2db(location, "loc_count")
+    */
 
   }
 
