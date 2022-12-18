@@ -51,7 +51,6 @@ object main {
       .withColumnRenamed("count", "num_request")
       .orderBy(col("hour_of_day").asc)
 
-
     // Most popular content
     val most_popular_content=data
       .select("PATH")
@@ -83,8 +82,7 @@ object main {
     val ipLoc = spark.read.format("csv").option("header", "false").load("src/resources/ip2loc.csv")
     val joinTable = data.withColumn("joinIP", regexp_replace(col("IP"), "\\.", ""))
     val location = ipLoc.join(joinTable, ipLoc("_c1") >= joinTable("joinIP") && ipLoc("_c0") <= joinTable("joinIP"), "right")
-     //location.filter(col("_c2").isNotNull).distinct().show()
-
+    val loc_count = location.groupBy(col("_c2")).count().withColumnRenamed("_c2", "Country")
 
     //Salamender üzerinden erişim yapanların bot olma yüzdesi, botların çoğunlukla hangi browser üzerinden geldiği
    /* val how_google_bot = data.select(col("USER AGENT")).filter(line => line.mkString.contains("bot.html")).count()
@@ -97,8 +95,8 @@ object main {
     write2db(most_popular_content, "most_popular_content")
     write2db(rates_to_date_country, "rates_to_date_country")
     write2db(not_found, "not_found")
-    write2db(location, "loc_count")
-    */
+    write2db(loc_count, "loc_count")
+     */
 
   }
 
